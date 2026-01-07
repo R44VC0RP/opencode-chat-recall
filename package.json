@@ -1,0 +1,56 @@
+{
+  "name": "opencode-chat-recall",
+  "version": "0.1.1",
+  "description": "OpenCode plugin for transcript recall after context compaction",
+  "module": "src/index.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "exports": {
+    ".": {
+      "bun": "./src/index.ts",
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "bun build ./src/index.ts --outdir ./dist --target bun",
+    "dev": "bun run --watch src/index.ts",
+    "test": "bun test",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "bun run typecheck && bun run test && bun run build"
+  },
+  "keywords": [
+    "opencode",
+    "plugin",
+    "transcript",
+    "recall",
+    "compaction",
+    "chat-history"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/R44VC0RP/opencode-chat-recall"
+  },
+  "homepage": "https://github.com/R44VC0RP/opencode-chat-recall#readme",
+  "bugs": {
+    "url": "https://github.com/R44VC0RP/opencode-chat-recall/issues"
+  },
+  "dependencies": {
+    "@opencode-ai/plugin": "latest",
+    "@opencode-ai/sdk": "latest"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^5"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}
