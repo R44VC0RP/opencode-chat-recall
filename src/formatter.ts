@@ -11,6 +11,14 @@ export function formatMessagesToMarkdown(
 ): string {
   const lines: string[] = []
 
+  // Defensive check - SDK may return {} instead of []
+  if (!Array.isArray(messages)) {
+    lines.push(`# ${sessionTitle}`)
+    lines.push("")
+    lines.push(`*No messages available*`)
+    return lines.join("\n")
+  }
+
   lines.push(`# ${sessionTitle}`)
   lines.push("")
   lines.push(`Generated: ${new Date().toISOString()}`)
@@ -50,6 +58,14 @@ export function formatMessagesToText(
   sessionTitle: string
 ): string {
   const lines: string[] = []
+
+  // Defensive check - SDK may return {} instead of []
+  if (!Array.isArray(messages)) {
+    lines.push(`=== ${sessionTitle} ===`)
+    lines.push("")
+    lines.push(`No messages available`)
+    return lines.join("\n")
+  }
 
   lines.push(`=== ${sessionTitle} ===`)
   lines.push("")
@@ -222,6 +238,12 @@ export function createChunks(
   sessionID: string
 ): TranscriptChunk[] {
   const chunks: TranscriptChunk[] = []
+  
+  // Defensive check - SDK may return {} instead of []
+  if (!Array.isArray(messages)) {
+    return chunks
+  }
+  
   let chunkIndex = 0
 
   for (const msg of messages) {

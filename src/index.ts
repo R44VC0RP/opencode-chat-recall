@@ -44,9 +44,13 @@ const CLEANUP_INTERVAL_MS = 60 * 60 * 1000
  * It saves conversation transcripts and allows searching through them.
  */
 export const ChatRecallPlugin: Plugin = async (input: PluginInput): Promise<Hooks> => {
-  const { client, project, directory, worktree } = input
+  const { client, project } = input
+  
+  // Ensure directory and worktree are strings (SDK may pass objects)
+  const directory = typeof input.directory === 'string' ? input.directory : String(input.directory || '')
+  const worktree = typeof input.worktree === 'string' ? input.worktree : String(input.worktree || '')
 
-  log.info("Plugin initialized", { projectId: project.id })
+  log.info("Plugin initialized", { projectId: project.id, directory, worktree })
 
   // Defer cleanup to not block initialization
   let cleanupScheduled = false
@@ -87,7 +91,8 @@ export const ChatRecallPlugin: Plugin = async (input: PluginInput): Promise<Hook
   async function fetchSessionMessages(sessionID: string): Promise<MessageWithParts[]> {
     try {
       const response = await client.session.messages({ path: { id: sessionID } })
-      if (!response.data) return []
+      // Check if data is an array, not just truthy (SDK may return {} instead of [])
+      if (!response.data || !Array.isArray(response.data)) return []
       
       return response.data.map((item) => ({
         info: item.info as Message,
@@ -124,7 +129,8 @@ export const ChatRecallPlugin: Plugin = async (input: PluginInput): Promise<Hook
       if (!session) return null
 
       const messages = await fetchSessionMessages(sessionID)
-      if (messages.length === 0) return null
+      // Use Array.isArray for proper type checking (SDK may return {} instead of [])
+      if (!Array.isArray(messages) || messages.length === 0) return null
 
       // Lazy load heavy modules
       const buildTranscript = await getBuildTranscript()
@@ -139,6 +145,12 @@ export const ChatRecallPlugin: Plugin = async (input: PluginInput): Promise<Hook
         worktree,
         compacted
       )
+
+      // Defensive check - ensure buildTranscript returned a valid object
+      if (!transcript || !transcript.metadata) {
+        log.error("buildTranscript returned invalid result", { sessionID, transcript: typeof transcript })
+        return null
+      }
 
       const path = await saveTranscript(transcript)
       log.info("Saved transcript", { sessionID, messageCount: messages.length, compacted })
@@ -223,15 +235,5 @@ If the user asks about something you don't remember or need more details about, 
 // Default export for plugin loading
 export default ChatRecallPlugin
 
-// Named exports for types and utilities (these are tree-shaken if not used)
-export { tools } from "./tools"
-export { buildTranscript, formatMessagesToMarkdown, formatMessagesToText } from "./formatter"
-export {
-  saveTranscript,
-  loadTranscript,
-  listTranscripts,
-  getTranscriptPath,
-  cleanupExpiredTranscripts,
-} from "./storage"
-export { searchTranscripts, searchInSession, searchInProject, searchAll } from "./search"
+// Export types only - avoid exporting functions that might conflict with hook names
 export type * from "./types"

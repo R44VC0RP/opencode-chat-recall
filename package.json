@@ -1,6 +1,6 @@
 {
   "name": "opencode-chat-recall",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "OpenCode plugin for transcript recall after context compaction",
   "module": "src/index.ts",
   "main": "dist/index.js",

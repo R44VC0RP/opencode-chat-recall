@@ -20,7 +20,9 @@ export async function ensureTranscriptDir(): Promise<string> {
 }
 
 export async function getSessionDir(sessionID: string): Promise<string> {
-  const dir = join(TRANSCRIPT_DIR, sessionID)
+  // Ensure sessionID is a string (defensive check)
+  const sid = typeof sessionID === 'string' ? sessionID : String(sessionID || '')
+  const dir = join(TRANSCRIPT_DIR, sid)
   await mkdir(dir, { recursive: true })
   return dir
 }
@@ -55,6 +57,10 @@ export async function removeIndexEntry(sessionID: string): Promise<void> {
 }
 
 export async function saveTranscript(transcript: Transcript): Promise<string> {
+  // Defensive check - ensure transcript is valid
+  if (!transcript || !transcript.metadata || !transcript.metadata.sessionID) {
+    throw new Error(`Invalid transcript: ${JSON.stringify(transcript)}`)
+  }
   const sessionDir = await getSessionDir(transcript.metadata.sessionID)
 
   // Save metadata
@@ -88,7 +94,9 @@ export async function saveTranscript(transcript: Transcript): Promise<string> {
 
 export async function loadTranscript(sessionID: string): Promise<Transcript | null> {
   try {
-    const sessionDir = join(TRANSCRIPT_DIR, sessionID)
+    // Ensure sessionID is a string (defensive check)
+    const sid = typeof sessionID === 'string' ? sessionID : String(sessionID || '')
+    const sessionDir = join(TRANSCRIPT_DIR, sid)
 
     const metadata = await Bun.file(join(sessionDir, "metadata.json")).json() as TranscriptMetadata
     const markdown = await Bun.file(join(sessionDir, "transcript.md")).text()
@@ -120,7 +128,9 @@ export async function loadTranscript(sessionID: string): Promise<Transcript | nu
 
 export async function loadTranscriptMarkdown(sessionID: string): Promise<string | null> {
   try {
-    const sessionDir = join(TRANSCRIPT_DIR, sessionID)
+    // Ensure sessionID is a string (defensive check)
+    const sid = typeof sessionID === 'string' ? sessionID : String(sessionID || '')
+    const sessionDir = join(TRANSCRIPT_DIR, sid)
     return await Bun.file(join(sessionDir, "transcript.md")).text()
   } catch {
     return null
@@ -129,7 +139,9 @@ export async function loadTranscriptMarkdown(sessionID: string): Promise<string 
 
 export async function loadTranscriptText(sessionID: string): Promise<string | null> {
   try {
-    const sessionDir = join(TRANSCRIPT_DIR, sessionID)
+    // Ensure sessionID is a string (defensive check)
+    const sid = typeof sessionID === 'string' ? sessionID : String(sessionID || '')
+    const sessionDir = join(TRANSCRIPT_DIR, sid)
     return await Bun.file(join(sessionDir, "transcript.txt")).text()
   } catch {
     return null
@@ -167,7 +179,9 @@ export async function listTranscripts(options?: {
 
 export async function deleteTranscript(sessionID: string): Promise<void> {
   try {
-    const sessionDir = join(TRANSCRIPT_DIR, sessionID)
+    // Ensure sessionID is a string (defensive check)
+    const sid = typeof sessionID === 'string' ? sessionID : String(sessionID || '')
+    const sessionDir = join(TRANSCRIPT_DIR, sid)
     
     // Remove all files in the session directory
     const files = await readdir(sessionDir, { recursive: true })
@@ -221,5 +235,7 @@ export function calculateExpiresAt(retentionDays: number = RETENTION_DAYS): numb
 }
 
 export function getTranscriptPath(sessionID: string): string {
-  return join(TRANSCRIPT_DIR, sessionID, "transcript.md")
+  // Ensure sessionID is a string (defensive check)
+  const sid = typeof sessionID === 'string' ? sessionID : String(sessionID || '')
+  return join(TRANSCRIPT_DIR, sid, "transcript.md")
 }
